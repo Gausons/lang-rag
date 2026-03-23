@@ -1,0 +1,57 @@
+:root {
+  --bg: radial-gradient(circle at 20% 10%, #f9f4ea, #f3efe6 45%, #ece5d6);
+  --panel: #fffaf0;
+  --text: #2d2316;
+  --accent: #0e5f5c;
+  --accent-soft: #d5eceb;
+  --border: #c8bba6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 28px auto;
+  padding: 0 16px 24px;
+}
+
+.card {
+  background: color-mix(in oklab, var(--panel), white 20%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 12px 30px rgba(40, 28, 10, 0.1);
+}
+
+textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-size: 15px;
+  resize: vertical;
+}
+
+button {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.meta {
+  font-size: 13px;
+  opacity: 0.82;
+}

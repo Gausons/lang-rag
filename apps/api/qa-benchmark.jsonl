@@ -1,0 +1,2 @@
+{"question":"系统上线依赖了哪些组件？","expectedAnswer":"依赖","expectedChunkIds":["demo-001::0"],"category":"dependency"}
+{"question":"某服务归属哪个团队？","expectedAnswer":"归属","expectedChunkIds":["demo-002::0"],"category":"ownership"}

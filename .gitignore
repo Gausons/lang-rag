@@ -1,0 +1,9 @@
+node_modules
+dist
+.next
+.env
+*.db
+*.db-shm
+*.db-wal
+coverage
+.DS_Store

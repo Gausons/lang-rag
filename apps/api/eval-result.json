@@ -1,0 +1,50 @@
+{
+  "summary": {
+    "total": 2,
+    "success": 1,
+    "latency": 232,
+    "citations": 12,
+    "ruleScore": 1,
+    "hitAtK": 0,
+    "recallAtK": 0,
+    "faithfulness": 0.40526332180524827,
+    "categoryBreakdown": {
+      "dependency": {
+        "success": 1,
+        "latency": 340,
+        "ruleScore": 1,
+        "hitAtK": 0,
+        "recallAtK": 0
+      },
+      "ownership": {
+        "success": 1,
+        "latency": 124,
+        "ruleScore": 1,
+        "hitAtK": 0,
+        "recallAtK": 0
+      }
+    }
+  },
+  "rows": [
+    {
+      "success": true,
+      "latencyMs": 340,
+      "citations": 12,
+      "ruleScore": 1,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "dependency",
+      "faithfulness": 0.4055646659990933
+    },
+    {
+      "success": true,
+      "latencyMs": 124,
+      "citations": 12,
+      "ruleScore": 1,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "ownership",
+      "faithfulness": 0.4049619776114033
+    }
+  ]
+}
