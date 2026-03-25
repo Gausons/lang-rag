@@ -41,6 +41,7 @@ export type QueryResponse = {
   traceId: string;
   cacheHit: 'exact' | 'semantic' | 'miss';
   latencyMs: number;
+  sessionId: string;
 };
 
 export const RELATION_ALLOWLIST = new Set([

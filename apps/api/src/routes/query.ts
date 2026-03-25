@@ -12,25 +12,26 @@ export async function registerQueryRoutes(app: FastifyInstance) {
     const start = Date.now();
     const body = (req.body ?? {}) as QueryRequest;
     if (!body.question?.trim()) throw new AppError('INVALID_INPUT', 'question is required', 400);
+    const sessionId = body.sessionId?.trim() || `sess_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const requestPayload = { ...body, sessionId };
     const tId = traceId();
-    const sessionScope = body.sessionId ? `session:${body.sessionId}` : 'global';
-    const historyTurns = body.sessionId ? await getSessionTurns(body.sessionId, env.SESSION_MAX_TURNS) : [];
+    const sessionScope = `session:${sessionId}`;
+    const historyTurns = await getSessionTurns(sessionId, env.SESSION_MAX_TURNS);
     const chatHistory = formatHistoryForPrompt(historyTurns);
 
-    const exact = await tryExactCache(body);
+    const exact = await tryExactCache(requestPayload);
     if (exact) {
-      const data = exact.data as Omit<QueryResponse, 'traceId' | 'cacheHit' | 'latencyMs'>;
+      const data = exact.data as Omit<QueryResponse, 'traceId' | 'cacheHit' | 'latencyMs' | 'sessionId'>;
       const res = {
         ...data,
         traceId: tId,
         cacheHit: 'exact',
-        latencyMs: Date.now() - start
+        latencyMs: Date.now() - start,
+        sessionId
       } satisfies QueryResponse;
-      if (body.sessionId) {
-        const ts = new Date().toISOString();
-        await appendSessionTurn(body.sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
-        await appendSessionTurn(body.sessionId, { role: 'assistant', content: res.answer, ts }, env.SESSION_MAX_TURNS);
-      }
+      const ts = new Date().toISOString();
+      await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
+      await appendSessionTurn(sessionId, { role: 'assistant', content: res.answer, ts }, env.SESSION_MAX_TURNS);
       return res;
     }
 
@@ -41,13 +42,12 @@ export async function registerQueryRoutes(app: FastifyInstance) {
         citations: semantic.data.citations,
         traceId: tId,
         cacheHit: 'semantic',
-        latencyMs: Date.now() - start
+        latencyMs: Date.now() - start,
+        sessionId
       } satisfies QueryResponse;
-      if (body.sessionId) {
-        const ts = new Date().toISOString();
-        await appendSessionTurn(body.sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
-        await appendSessionTurn(body.sessionId, { role: 'assistant', content: res.answer, ts }, env.SESSION_MAX_TURNS);
-      }
+      const ts = new Date().toISOString();
+      await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
+      await appendSessionTurn(sessionId, { role: 'assistant', content: res.answer, ts }, env.SESSION_MAX_TURNS);
       return res;
     }
 
@@ -57,24 +57,23 @@ export async function registerQueryRoutes(app: FastifyInstance) {
       citations: result.citations,
       traceId: tId,
       cacheHit: 'miss',
-      latencyMs: Date.now() - start
+      latencyMs: Date.now() - start,
+      sessionId
     };
 
-    await setExactCache(body, { answer: response.answer, citations: response.citations });
+    await setExactCache(requestPayload, { answer: response.answer, citations: response.citations });
     await setSemanticCache(body.question, response.answer, response.citations, semantic.embedding, sessionScope);
-    if (body.sessionId) {
-      const ts = new Date().toISOString();
-      await appendSessionTurn(
-        body.sessionId,
-        { role: 'user', content: body.question, ts },
-        env.SESSION_MAX_TURNS
-      );
-      await appendSessionTurn(
-        body.sessionId,
-        { role: 'assistant', content: response.answer, ts },
-        env.SESSION_MAX_TURNS
-      );
-    }
+    const ts = new Date().toISOString();
+    await appendSessionTurn(
+      sessionId,
+      { role: 'user', content: body.question, ts },
+      env.SESSION_MAX_TURNS
+    );
+    await appendSessionTurn(
+      sessionId,
+      { role: 'assistant', content: response.answer, ts },
+      env.SESSION_MAX_TURNS
+    );
     return response;
   });
 }

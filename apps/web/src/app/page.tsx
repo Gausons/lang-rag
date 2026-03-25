@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Resp = {
   answer: string;
@@ -8,28 +8,74 @@ type Resp = {
   traceId: string;
   cacheHit: string;
   latencyMs: number;
+  sessionId: string;
+};
+
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+  meta?: string;
+  citations?: Resp['citations'];
 };
 
 export default function Page() {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
-  const [resp, setResp] = useState<Resp | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [sessionId, setSessionId] = useState<string>('');
   const [err, setErr] = useState('');
 
+  useEffect(() => {
+    const saved = window.localStorage.getItem('rag_session_id');
+    if (saved) setSessionId(saved);
+  }, []);
+
+  useEffect(() => {
+    if (sessionId) window.localStorage.setItem('rag_session_id', sessionId);
+  }, [sessionId]);
+
+  function newSession() {
+    setSessionId('');
+    setMessages([]);
+    setErr('');
+    window.localStorage.removeItem('rag_session_id');
+  }
+
   async function ask() {
+    const q = question.trim();
+    if (!q) return;
     setLoading(true);
     setErr('');
+    setMessages((prev) => [...prev, { role: 'user', content: q }]);
+    setQuestion('');
     try {
       const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001'}/query`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ question: q, sessionId: sessionId || undefined })
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data?.error?.message ?? 'query failed');
-      setResp(data);
+      const resp = data as Resp;
+      setSessionId(resp.sessionId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: resp.answer,
+          meta: `trace: ${resp.traceId} | cache: ${resp.cacheHit} | ${resp.latencyMs}ms`,
+          citations: resp.citations
+        }
+      ]);
     } catch (e) {
       setErr(String(e));
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: '本轮请求失败，请稍后重试。'
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -50,28 +96,32 @@ export default function Page() {
           <button disabled={loading || !question.trim()} onClick={ask}>
             {loading ? '查询中...' : '查询'}
           </button>
-          {resp ? (
-            <span className="meta">
-              trace: {resp.traceId} | cache: {resp.cacheHit} | {resp.latencyMs}ms
-            </span>
-          ) : null}
+          <button onClick={newSession}>新会话</button>
+          {sessionId ? <span className="meta">session: {sessionId}</span> : null}
         </div>
         {err ? <p style={{ color: '#9f1616' }}>{err}</p> : null}
       </div>
-      {resp ? (
+      {messages.length ? (
         <div className="card" style={{ marginTop: 16 }}>
-          <h3>答案</h3>
-          <p>{resp.answer}</p>
-          <h3>引用</h3>
-          <ul>
-            {resp.citations.map((c) => (
-              <li key={c.chunkId}>
-                <code>{c.chunkId}</code> | {c.source}
-                <br />
-                {c.snippet}
-              </li>
-            ))}
-          </ul>
+          <h3>会话</h3>
+          {messages.map((m, i) => (
+            <div key={i} style={{ marginBottom: 14, paddingBottom: 10, borderBottom: '1px dashed #d8c8ad' }}>
+              <p>
+                <strong>{m.role === 'user' ? '你' : '助手'}：</strong>
+                {m.content}
+              </p>
+              {m.meta ? <p className="meta">{m.meta}</p> : null}
+              {m.citations?.length ? (
+                <ul>
+                  {m.citations.map((c) => (
+                    <li key={`${i}_${c.chunkId}`}>
+                      <code>{c.chunkId}</code> | {c.source}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
         </div>
       ) : null}
     </main>
