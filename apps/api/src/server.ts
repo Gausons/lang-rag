@@ -12,7 +12,21 @@ import { neo4jDriver, redis } from './services/clients.js';
 
 const app = Fastify({ logger: true });
 
-app.register(cors, { origin: env.WEB_ORIGIN });
+const allowOrigins = new Set([
+  env.WEB_ORIGIN,
+  'http://localhost:3000',
+  'http://127.0.0.1:3000'
+]);
+
+app.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin || allowOrigins.has(origin)) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error(`CORS blocked origin: ${origin}`), false);
+  }
+});
 app.register(multipart, { limits: { fileSize: 50 * 1024 * 1024 } });
 
 app.setErrorHandler((err, _req, reply) => {

@@ -1,3 +1,14 @@
-文档 3
-系统 A 依赖 组件 B3，并由团队 T3 负责。
-上线时间 2025-04-01。
+[运维手册] inventory-service
+
+服务职责
+inventory-service 提供预占库存、扣减库存、回滚库存三个接口。
+
+调用链
+order-core -> inventory-service -> stock-db。
+
+异常处理
+当 stock-db 延迟超过 200ms 时，inventory-service 会触发降级，返回 RETRY_LATER。
+降级期间会写入 inventory_degrade_topic 供运维告警消费。
+
+责任边界
+归属 供应链平台团队。

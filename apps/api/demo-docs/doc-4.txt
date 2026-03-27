@@ -1,3 +1,11 @@
-文档 4
-系统 A 依赖 组件 B4，并由团队 T4 负责。
-上线时间 2025-05-01。
+[数据治理] 用户画像同步任务（profile-sync-job）
+
+profile-sync-job 每小时从 CRM 拉取增量变更并写入 user-profile-es。
+
+依赖
+- depends_on crm-api
+- depends_on user-profile-es
+- depends_on redis-profile-lock
+
+风险说明
+当 crm-api 返回 5xx 比例超过 10% 时，同步任务会暂停，避免脏数据写入。

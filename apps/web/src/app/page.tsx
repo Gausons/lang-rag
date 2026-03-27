@@ -1,28 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-type Resp = {
-  answer: string;
-  citations: { chunkId: string; source: string; snippet: string }[];
-  traceId: string;
-  cacheHit: string;
-  latencyMs: number;
-  sessionId: string;
-};
-
+type Citation = { chunkId: string; source: string; snippet: string };
 type Message = {
+  id: string;
   role: 'user' | 'assistant';
   content: string;
   meta?: string;
-  citations?: Resp['citations'];
+  citations?: Citation[];
 };
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001';
 
 export default function Page() {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [sessionId, setSessionId] = useState<string>('');
+  const [sessionId, setSessionId] = useState('');
   const [err, setErr] = useState('');
 
   useEffect(() => {
@@ -34,6 +29,8 @@ export default function Page() {
     if (sessionId) window.localStorage.setItem('rag_session_id', sessionId);
   }, [sessionId]);
 
+  const canAsk = useMemo(() => !!question.trim() && !loading, [question, loading]);
+
   function newSession() {
     setSessionId('');
     setMessages([]);
@@ -41,89 +38,173 @@ export default function Page() {
     window.localStorage.removeItem('rag_session_id');
   }
 
+  function appendToken(targetId: string, token: string) {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === targetId ? { ...m, content: `${m.content}${token}` } : m))
+    );
+  }
+
+  function patchAssistant(targetId: string, patch: Partial<Message>) {
+    setMessages((prev) => prev.map((m) => (m.id === targetId ? { ...m, ...patch } : m)));
+  }
+
   async function ask() {
     const q = question.trim();
-    if (!q) return;
-    setLoading(true);
+    if (!q || loading) return;
     setErr('');
-    setMessages((prev) => [...prev, { role: 'user', content: q }]);
+    setLoading(true);
     setQuestion('');
+
+    const userId = `u_${Date.now()}`;
+    const assistantId = `a_${Date.now()}`;
+    setMessages((prev) => [
+      ...prev,
+      { id: userId, role: 'user', content: q },
+      { id: assistantId, role: 'assistant', content: '' }
+    ]);
+
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:3001'}/query`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ question: q, sessionId: sessionId || undefined })
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data?.error?.message ?? 'query failed');
-      const resp = data as Resp;
-      setSessionId(resp.sessionId);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: resp.answer,
-          meta: `trace: ${resp.traceId} | cache: ${resp.cacheHit} | ${resp.latencyMs}ms`,
-          citations: resp.citations
+      const requestPayload = { question: q, sessionId: sessionId || undefined };
+      let citations: Citation[] = [];
+      let meta = '';
+      let streamed = false;
+
+      try {
+        const r = await fetch(`${API_BASE}/query/stream`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(requestPayload)
+        });
+
+        if (!r.ok || !r.body) throw new Error(`stream request failed (${r.status})`);
+
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let eventName = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split('\n\n');
+          buffer = chunks.pop() ?? '';
+
+          for (const chunk of chunks) {
+            const lines = chunk.split('\n');
+            let dataStr = '';
+            eventName = '';
+            for (const line of lines) {
+              if (line.startsWith('event:')) eventName = line.replace('event:', '').trim();
+              if (line.startsWith('data:')) dataStr += line.replace('data:', '').trim();
+            }
+            if (!eventName || !dataStr) continue;
+            const data = JSON.parse(dataStr) as Record<string, unknown>;
+
+            if (eventName === 'token') {
+              streamed = true;
+              appendToken(assistantId, String(data.token ?? ''));
+            } else if (eventName === 'citations') {
+              citations = (data.citations ?? []) as Citation[];
+            } else if (eventName === 'done') {
+              const sid = String(data.sessionId ?? '');
+              if (sid) setSessionId(sid);
+              meta = `trace: ${String(data.traceId ?? '')} | cache: ${String(data.cacheHit ?? '')} | ${String(
+                data.latencyMs ?? ''
+              )}ms`;
+            } else if (eventName === 'error') {
+              throw new Error(String(data.message ?? 'stream error'));
+            }
+          }
         }
-      ]);
+      } catch {
+        const r = await fetch(`${API_BASE}/query`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(requestPayload)
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data?.error?.message ?? 'query failed');
+        patchAssistant(assistantId, { content: String(data.answer ?? '') });
+        streamed = true;
+        citations = (data.citations ?? []) as Citation[];
+        meta = `trace: ${String(data.traceId ?? '')} | cache: ${String(data.cacheHit ?? '')} | ${String(
+          data.latencyMs ?? ''
+        )}ms`;
+        const sid = String(data.sessionId ?? '');
+        if (sid) setSessionId(sid);
+      }
+
+      if (!streamed) patchAssistant(assistantId, { content: '（空响应）' });
+      patchAssistant(assistantId, { citations, meta });
     } catch (e) {
-      setErr(String(e));
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: '本轮请求失败，请稍后重试。'
-        }
-      ]);
+      const message = e instanceof Error ? e.message : String(e);
+      setErr(message);
+      patchAssistant(assistantId, { content: '流式请求失败，请重试。' });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main className="wrap">
-      <div className="card">
-        <h1>Agentic Hybrid Graph RAG</h1>
-        <p className="meta">Fastify + LangGraph.js + Qdrant + Neo4j + Redis</p>
-        <textarea
-          rows={5}
-          placeholder="输入问题，例如：某系统上线依赖了哪些组件？"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-        />
-        <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center' }}>
-          <button disabled={loading || !question.trim()} onClick={ask}>
-            {loading ? '查询中...' : '查询'}
-          </button>
-          <button onClick={newSession}>新会话</button>
-          {sessionId ? <span className="meta">session: {sessionId}</span> : null}
-        </div>
-        {err ? <p style={{ color: '#9f1616' }}>{err}</p> : null}
-      </div>
-      {messages.length ? (
-        <div className="card" style={{ marginTop: 16 }}>
-          <h3>会话</h3>
-          {messages.map((m, i) => (
-            <div key={i} style={{ marginBottom: 14, paddingBottom: 10, borderBottom: '1px dashed #d8c8ad' }}>
-              <p>
-                <strong>{m.role === 'user' ? '你' : '助手'}：</strong>
-                {m.content}
-              </p>
-              {m.meta ? <p className="meta">{m.meta}</p> : null}
-              {m.citations?.length ? (
-                <ul>
-                  {m.citations.map((c) => (
-                    <li key={`${i}_${c.chunkId}`}>
-                      <code>{c.chunkId}</code> | {c.source}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+    <main className="chat-shell">
+      <aside className="chat-side">
+        <h2>Enterprise RAG</h2>
+        <p>Hybrid Graph RAG</p>
+        <button onClick={newSession}>+ New chat</button>
+        {sessionId ? <small>session: {sessionId}</small> : <small>session: not started</small>}
+      </aside>
+
+      <section className="chat-main">
+        <div className="chat-log">
+          {messages.length === 0 ? (
+            <div className="chat-empty">
+              <h1>有什么可以帮你？</h1>
+              <p>试试：这个系统上线依赖哪些组件？</p>
             </div>
-          ))}
+          ) : (
+            messages.map((m) => (
+              <article key={m.id} className={`msg ${m.role}`}>
+                <div className="msg-avatar">{m.role === 'user' ? '你' : 'AI'}</div>
+                <div className="msg-body">
+                  <p>{m.content || (loading && m.role === 'assistant' ? '...' : '')}</p>
+                  {m.meta ? <p className="msg-meta">{m.meta}</p> : null}
+                  {m.citations?.length ? (
+                    <ul className="msg-cites">
+                      {m.citations.map((c) => (
+                        <li key={`${m.id}_${c.chunkId}`}>
+                          <code>{c.chunkId}</code> {c.source}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </article>
+            ))
+          )}
         </div>
-      ) : null}
+
+        <div className="chat-input">
+          <textarea
+            rows={3}
+            value={question}
+            placeholder="给 Agentic Hybrid Graph RAG 发送消息"
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                void ask();
+              }
+            }}
+          />
+          <div className="chat-actions">
+            <button disabled={!canAsk} onClick={ask}>
+              {loading ? '生成中...' : '发送'}
+            </button>
+            {err ? <span className="chat-error">{err}</span> : null}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

@@ -1,1 +1,5 @@
+[快速示例] 依赖关系
+
 某系统上线依赖了缓存、数据库与消息队列。
+具体组件包括 redis-cluster-prod、mysql-order、kafka-pay-event。
+其中 redis-cluster-prod 用于幂等校验，mysql-order 存储订单状态，kafka-pay-event 负责事件解耦。

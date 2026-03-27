@@ -3,6 +3,8 @@ import { env } from '../lib/config.js';
 import type { ExtractedFacts } from '../types/index.js';
 import type { RetrievedChunk } from '../types/index.js';
 
+export type QueryIntent = 'chitchat' | 'knowledge';
+
 function localEmbedding(text: string, size = 1536): number[] {
   const out = new Array<number>(size).fill(0);
   for (let i = 0; i < text.length; i += 1) {
@@ -26,6 +28,19 @@ function localCrossScore(question: string, text: string): number {
   if (!q.length) return 0;
   const hit = q.filter((token) => t.includes(token)).length;
   return hit / q.length;
+}
+
+function localIntent(question: string): QueryIntent {
+  const q = question.trim().toLowerCase();
+  const patterns = [
+    /你好|hi|hello|早上好|晚上好|在吗/,
+    /你是谁|你能做什么|介绍一下你自己/,
+    /谢谢|多谢|辛苦了/,
+    /讲个笑话|聊聊|随便聊聊|心情/,
+    /今天天气|吃什么|晚饭|午饭/
+  ];
+  const isChitchat = patterns.some((p) => p.test(q));
+  return isChitchat ? 'chitchat' : 'knowledge';
 }
 
 export async function embedTexts(texts: string[]): Promise<number[][]> {
@@ -57,6 +72,79 @@ export async function chat(prompt: string, system = 'You are a precise enterpris
   } catch {
     return localChat(prompt);
   }
+}
+
+export async function chatStream(
+  prompt: string,
+  onToken: (token: string) => void,
+  system = 'You are a precise enterprise RAG assistant.'
+): Promise<string> {
+  if (env.OPENAI_API_KEY === 'EMPTY') {
+    const text = localChat(prompt);
+    for (const ch of text) onToken(ch);
+    return text;
+  }
+  try {
+    const stream = await openai.chat.completions.create({
+      model: env.OPENAI_CHAT_MODEL,
+      temperature: 0.1,
+      stream: true,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: prompt }
+      ]
+    });
+    let full = '';
+    for await (const part of stream) {
+      const token = part.choices?.[0]?.delta?.content ?? '';
+      if (!token) continue;
+      full += token;
+      onToken(token);
+    }
+    return full;
+  } catch {
+    const text = localChat(prompt);
+    for (const ch of text) onToken(ch);
+    return text;
+  }
+}
+
+export async function detectIntent(question: string, chatHistory?: string): Promise<QueryIntent> {
+  const fallback = localIntent(question);
+  if (env.OPENAI_API_KEY === 'EMPTY') return fallback;
+  try {
+    const prompt = [
+      'Classify user intent into one label only: chitchat or knowledge.',
+      'chitchat = social/small talk without needing document retrieval.',
+      'knowledge = asks facts/tasks that likely need enterprise document grounding.',
+      chatHistory ? `Conversation history:\n${chatHistory}` : '',
+      `User question:\n${question}`,
+      'Output only one word: chitchat or knowledge.'
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+    const out = (await chat(prompt, 'You are an intent classifier.')).trim().toLowerCase();
+    if (out.includes('chitchat')) return 'chitchat';
+    if (out.includes('knowledge')) return 'knowledge';
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function chatDirectReply(
+  question: string,
+  chatHistory?: string,
+  onToken?: (token: string) => void
+): Promise<string> {
+  const prompt = [
+    'User is doing small talk. Reply naturally in Chinese, concise and friendly.',
+    chatHistory ? `Conversation history:\n${chatHistory}` : '',
+    `User:\n${question}`
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+  return onToken ? chatStream(prompt, onToken) : chat(prompt);
 }
 
 export async function extractFacts(text: string): Promise<ExtractedFacts> {

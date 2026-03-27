@@ -24,6 +24,7 @@
 ## API Endpoints
 - `POST /ingest` (`multipart file` or JSON `{ "sourcePath": "..." }`)
 - `POST /query` (`{ question, topK?, filters?, sessionId? }`)
+- `POST /query/stream` (SSE streaming)
 - `POST /graph/rebuild`
 - `GET /graph/rebuild/:jobId`
 - `GET /graph/metrics`
@@ -72,5 +73,6 @@ pnpm test
 ## Notes
 - Retrieval strategy follows: `dense + sparse + graph -> RRF -> embedding-MMR -> cross-encoder`.
 - When `sessionId` is provided, API stores/replays recent turns (default 6) to support multi-turn context.
+- Query includes intent recognition: small-talk goes direct response (no retrieval), knowledge questions go full RAG pipeline.
 - Recall pool defaults `60~120`, final context defaults `6~12`.
 - Job status persistence uses local file storage in `DATA_DIR` (MVP production baseline, easy to swap to SQLite).

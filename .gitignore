@@ -7,3 +7,4 @@ dist
 *.db-wal
 coverage
 .DS_Store
+eval-result.json

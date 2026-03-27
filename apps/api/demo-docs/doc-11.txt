@@ -1,3 +1,12 @@
-文档 11
-系统 A 依赖 组件 B11，并由团队 T11 负责。
-上线时间 2025-03-01。
+[应急预案] checkout-api 不可用
+
+触发条件
+checkout-api 连续 3 分钟错误率 > 8%。
+
+应急步骤
+1) 打开 feature flag：checkout_readonly=true。
+2) 将流量切至备用集群 checkout-api-b。
+3) 通知支付平台团队与交易平台团队进入 war room。
+
+恢复标准
+错误率连续 10 分钟低于 1%。

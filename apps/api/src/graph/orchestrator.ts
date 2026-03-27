@@ -3,7 +3,7 @@ import type { Citation } from '@lang-rag/shared';
 import { env } from '../lib/config.js';
 import { mmrSelect } from '../lib/retrieval.js';
 import type { QueryTrace, RetrievedChunk } from '../types/index.js';
-import { chat, crossEncodeRerank } from '../services/llm.js';
+import { chat, chatStream, crossEncodeRerank } from '../services/llm.js';
 import { loadEmbeddings, retrieveHybrid } from '../services/retrieve.js';
 
 const RagState = Annotation.Root({
@@ -26,7 +26,16 @@ export function planRoute(question: string): 'broad' | 'focused' {
   return question.length > 30 ? 'focused' : 'broad';
 }
 
-export async function runRagGraph(question: string, topK = 80, chatHistory?: string) {
+type RagRunOptions = {
+  onToken?: (token: string) => void;
+};
+
+export async function runRagGraph(
+  question: string,
+  topK = 80,
+  chatHistory?: string,
+  options?: RagRunOptions
+) {
   const planner = async (state: typeof RagState.State) => {
     const route = planRoute(state.question);
     return {
@@ -82,7 +91,7 @@ export async function runRagGraph(question: string, topK = 80, chatHistory?: str
     ]
       .filter(Boolean)
       .join('\n\n');
-    const answer = await chat(prompt);
+    const answer = options?.onToken ? await chatStream(prompt, options.onToken) : await chat(prompt);
     const citations = state.context.map((c) => ({
       chunkId: c.chunkId,
       source: c.metadata.source,

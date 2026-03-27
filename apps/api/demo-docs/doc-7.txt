@@ -1,3 +1,12 @@
-文档 7
-系统 A 依赖 组件 B7，并由团队 T7 负责。
-上线时间 2025-08-01。
+[接口契约] logistics-adapter
+
+物流适配层统一封装顺丰、中通、京东物流 API。
+对外提供 createShipment、queryTracking、cancelShipment。
+
+依赖
+- depends_on courier-sf-sdk
+- depends_on courier-zt-sdk
+- depends_on courier-jd-sdk
+
+归属
+履约平台团队。

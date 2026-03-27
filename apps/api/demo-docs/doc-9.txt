@@ -1,3 +1,10 @@
-文档 9
-系统 A 依赖 组件 B9，并由团队 T9 负责。
-上线时间 2025-01-01。
+[安全审计] token-service
+
+token-service 负责签发内部服务 JWT，默认有效期 15 分钟。
+
+关键约束
+- 必须依赖 kms-sign 进行私钥托管。
+- 所有 refresh 请求必须记录审计日志到 audit-log-topic。
+
+风险
+如果 kms-sign 不可用，token-service 仅允许校验，不允许签发。

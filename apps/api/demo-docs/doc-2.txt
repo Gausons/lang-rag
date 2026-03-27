@@ -1,3 +1,16 @@
-文档 2
-系统 A 依赖 组件 B2，并由团队 T2 负责。
-上线时间 2025-03-01。
+[架构说明] 订单中台（order-core）
+
+订单中台负责订单状态机流转，状态包括：CREATED、PAID、SHIPPED、DONE、CLOSED。
+服务通过 saga 协调库存与支付，补偿策略由 order-compensator 执行。
+
+依赖关系
+- 依赖 inventory-service 扣减库存。
+- 依赖 pay-gateway 获取支付结果回调。
+- 依赖 risk-policy-engine 执行风控拦截。
+
+团队归属
+订单中台归属 交易平台团队。
+技术负责人：周越。
+
+变更记录
+2025-03-01 新增“支付超时自动关闭”任务，每 5 分钟扫描一次。

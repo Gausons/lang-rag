@@ -1,2 +1,12 @@
-{"question":"系统上线依赖了哪些组件？","expectedAnswer":"依赖","expectedChunkIds":["demo-001::0"],"category":"dependency"}
-{"question":"某服务归属哪个团队？","expectedAnswer":"归属","expectedChunkIds":["demo-002::0"],"category":"ownership"}
+{"question":"支付网关服务依赖了哪些关键组件？","expectedAnswer":"redis-cluster-prod、mysql-order、kafka-pay-event、kms-sign","expectedChunkIds":["6974dee48ec1::0"],"category":"dependency"}
+{"question":"订单中台归属哪个团队？","expectedAnswer":"交易平台团队","expectedChunkIds":["d1702ddc7045::0","14b806efa147::0"],"category":"ownership"}
+{"question":"inventory-service 在数据库延迟高时会返回什么？","expectedAnswer":"RETRY_LATER","expectedChunkIds":["c3a23cb902a0::0"],"category":"resilience"}
+{"question":"用户画像同步任务依赖哪些系统？","expectedAnswer":"crm-api、user-profile-es、redis-profile-lock","expectedChunkIds":["eee3acbb36a4::0"],"category":"dependency"}
+{"question":"2025-06-14 故障的根因是什么？","expectedAnswer":"kafka-pay-event consumer group 偏移提交异常","expectedChunkIds":["50bc7df2f9f6::0"],"category":"incident"}
+{"question":"risk-policy-engine v2.4 新增了什么规则？","expectedAnswer":"同设备 10 分钟内超过 6 次失败支付即拦截","expectedChunkIds":["7075737a9803::0"],"category":"release"}
+{"question":"logistics-adapter 提供哪些接口？","expectedAnswer":"createShipment、queryTracking、cancelShipment","expectedChunkIds":["cac0f0e066ff::0"],"category":"api"}
+{"question":"缓存优化专项最后命中率提升到了多少？","expectedAnswer":"89%","expectedChunkIds":["567d8e7ebe29::0"],"category":"performance"}
+{"question":"token-service 在 kms-sign 不可用时如何处理？","expectedAnswer":"仅允许校验，不允许签发","expectedChunkIds":["0c9ca1cf52ed::0"],"category":"security"}
+{"question":"当支付峰值超过 3000 TPS，kafka 分区建议扩容到多少？","expectedAnswer":"18","expectedChunkIds":["74cf31b4a210::0"],"category":"capacity"}
+{"question":"checkout-api 触发应急的条件是什么？","expectedAnswer":"连续 3 分钟错误率大于 8%","expectedChunkIds":["bdfbb33d6ab8::0"],"category":"ops"}
+{"question":"FAQ 里为什么需要图谱检索？","expectedAnswer":"支持实体关系查询","expectedChunkIds":["ab51fb01f7bb::0"],"category":"faq"}

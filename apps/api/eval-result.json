@@ -1,50 +1,213 @@
 {
   "summary": {
-    "total": 2,
+    "total": 12,
     "success": 1,
-    "latency": 232,
-    "citations": 12,
-    "ruleScore": 1,
-    "hitAtK": 0,
-    "recallAtK": 0,
-    "faithfulness": 0.40526332180524827,
+    "latency": 187.58333333333334,
+    "citations": 10,
+    "ruleScore": 0,
+    "hitAtK": 0.5833333333333334,
+    "recallAtK": 0.5833333333333334,
+    "faithfulness": 0.46703608106499056,
     "categoryBreakdown": {
       "dependency": {
         "success": 1,
-        "latency": 340,
-        "ruleScore": 1,
-        "hitAtK": 0,
-        "recallAtK": 0
+        "latency": 294.5,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
       },
       "ownership": {
         "success": 1,
-        "latency": 124,
-        "ruleScore": 1,
+        "latency": 224,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
+      "resilience": {
+        "success": 1,
+        "latency": 214,
+        "ruleScore": 0,
         "hitAtK": 0,
         "recallAtK": 0
+      },
+      "incident": {
+        "success": 1,
+        "latency": 176,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
+      "release": {
+        "success": 1,
+        "latency": 191,
+        "ruleScore": 0,
+        "hitAtK": 0,
+        "recallAtK": 0
+      },
+      "api": {
+        "success": 1,
+        "latency": 110,
+        "ruleScore": 0,
+        "hitAtK": 0,
+        "recallAtK": 0
+      },
+      "performance": {
+        "success": 1,
+        "latency": 192,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
+      "security": {
+        "success": 1,
+        "latency": 164,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
+      "capacity": {
+        "success": 1,
+        "latency": 99,
+        "ruleScore": 0,
+        "hitAtK": 0,
+        "recallAtK": 0
+      },
+      "ops": {
+        "success": 1,
+        "latency": 175,
+        "ruleScore": 0,
+        "hitAtK": 0,
+        "recallAtK": 0
+      },
+      "faq": {
+        "success": 1,
+        "latency": 117,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
       }
     }
   },
   "rows": [
     {
       "success": true,
-      "latencyMs": 340,
+      "latencyMs": 376,
       "citations": 12,
-      "ruleScore": 1,
-      "hitAtK": 0,
-      "recallAtK": 0,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
       "category": "dependency",
-      "faithfulness": 0.4055646659990933
+      "faithfulness": 0.40158720206110327
     },
     {
       "success": true,
-      "latencyMs": 124,
+      "latencyMs": 224,
       "citations": 12,
-      "ruleScore": 1,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "ownership",
+      "faithfulness": 0.39261741188640825
+    },
+    {
+      "success": true,
+      "latencyMs": 214,
+      "citations": 6,
+      "ruleScore": 0,
       "hitAtK": 0,
       "recallAtK": 0,
-      "category": "ownership",
-      "faithfulness": 0.4049619776114033
+      "category": "resilience",
+      "faithfulness": 0.5720432234525037
+    },
+    {
+      "success": true,
+      "latencyMs": 213,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "dependency",
+      "faithfulness": 0.3900140511742718
+    },
+    {
+      "success": true,
+      "latencyMs": 176,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "incident",
+      "faithfulness": 0.4046945360424715
+    },
+    {
+      "success": true,
+      "latencyMs": 191,
+      "citations": 6,
+      "ruleScore": 0,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "release",
+      "faithfulness": 0.6218877378092172
+    },
+    {
+      "success": true,
+      "latencyMs": 110,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "api",
+      "faithfulness": 0.39394890415695405
+    },
+    {
+      "success": true,
+      "latencyMs": 192,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "performance",
+      "faithfulness": 0.4076386078203318
+    },
+    {
+      "success": true,
+      "latencyMs": 164,
+      "citations": 6,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "security",
+      "faithfulness": 0.6089587543707181
+    },
+    {
+      "success": true,
+      "latencyMs": 99,
+      "citations": 6,
+      "ruleScore": 0,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "capacity",
+      "faithfulness": 0.6139526582059376
+    },
+    {
+      "success": true,
+      "latencyMs": 175,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "ops",
+      "faithfulness": 0.41276270873110266
+    },
+    {
+      "success": true,
+      "latencyMs": 117,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "faq",
+      "faithfulness": 0.3843271770688661
     }
   ]
 }
