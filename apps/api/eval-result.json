@@ -2,212 +2,503 @@
   "summary": {
     "total": 12,
     "success": 1,
-    "latency": 187.58333333333334,
-    "citations": 10,
+    "latency": 524.9166666666666,
+    "citations": 12,
     "ruleScore": 0,
-    "hitAtK": 0.5833333333333334,
-    "recallAtK": 0.5833333333333334,
-    "faithfulness": 0.46703608106499056,
+    "hitAtK": 0.8333333333333334,
+    "recallAtK": 0.7916666666666666,
+    "faithfulness": 0.37676582143431153,
+    "retries": 1,
     "categoryBreakdown": {
       "dependency": {
         "success": 1,
-        "latency": 294.5,
-        "ruleScore": 0,
-        "hitAtK": 1,
-        "recallAtK": 1
-      },
-      "ownership": {
-        "success": 1,
-        "latency": 224,
-        "ruleScore": 0,
-        "hitAtK": 1,
-        "recallAtK": 1
-      },
-      "resilience": {
-        "success": 1,
-        "latency": 214,
+        "latency": 2483.5,
         "ruleScore": 0,
         "hitAtK": 0,
         "recallAtK": 0
       },
+      "ownership": {
+        "success": 1,
+        "latency": 132,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 0.5
+      },
+      "resilience": {
+        "success": 1,
+        "latency": 201,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
       "incident": {
         "success": 1,
-        "latency": 176,
+        "latency": 147,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "release": {
         "success": 1,
-        "latency": 191,
+        "latency": 141,
         "ruleScore": 0,
-        "hitAtK": 0,
-        "recallAtK": 0
+        "hitAtK": 1,
+        "recallAtK": 1
       },
       "api": {
         "success": 1,
-        "latency": 110,
+        "latency": 149,
         "ruleScore": 0,
-        "hitAtK": 0,
-        "recallAtK": 0
+        "hitAtK": 1,
+        "recallAtK": 1
       },
       "performance": {
         "success": 1,
-        "latency": 192,
+        "latency": 119,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "security": {
         "success": 1,
-        "latency": 164,
+        "latency": 173,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "capacity": {
         "success": 1,
-        "latency": 99,
-        "ruleScore": 0,
-        "hitAtK": 0,
-        "recallAtK": 0
-      },
-      "ops": {
-        "success": 1,
-        "latency": 175,
-        "ruleScore": 0,
-        "hitAtK": 0,
-        "recallAtK": 0
-      },
-      "faq": {
-        "success": 1,
-        "latency": 117,
+        "latency": 93,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
+      },
+      "ops": {
+        "success": 1,
+        "latency": 75,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      },
+      "faq": {
+        "success": 1,
+        "latency": 102,
+        "ruleScore": 0,
+        "hitAtK": 1,
+        "recallAtK": 1
+      }
+    },
+    "agentBreakdown": {
+      "IntentRouterAgent": {
+        "avgLatency": 0.08333333333333333,
+        "coverage": 1
+      },
+      "QueryRewriteAgent": {
+        "avgLatency": 0.08333333333333333,
+        "coverage": 1
+      },
+      "RetrievalAgent": {
+        "avgLatency": 458.0833333333333,
+        "coverage": 1
+      },
+      "RerankAgent": {
+        "avgLatency": 66.41666666666667,
+        "coverage": 1
+      },
+      "SynthesisAgent": {
+        "avgLatency": 0.08333333333333333,
+        "coverage": 1
+      },
+      "VerifierAgent": {
+        "avgLatency": 0,
+        "coverage": 1
       }
     }
   },
   "rows": [
     {
       "success": true,
-      "latencyMs": 376,
+      "latencyMs": 4836,
       "citations": 12,
-      "ruleScore": 0,
-      "hitAtK": 1,
-      "recallAtK": 1,
-      "category": "dependency",
-      "faithfulness": 0.40158720206110327
-    },
-    {
-      "success": true,
-      "latencyMs": 224,
-      "citations": 12,
-      "ruleScore": 0,
-      "hitAtK": 1,
-      "recallAtK": 1,
-      "category": "ownership",
-      "faithfulness": 0.39261741188640825
-    },
-    {
-      "success": true,
-      "latencyMs": 214,
-      "citations": 6,
       "ruleScore": 0,
       "hitAtK": 0,
       "recallAtK": 0,
-      "category": "resilience",
-      "faithfulness": 0.5720432234525037
+      "category": "dependency",
+      "faithfulness": 0.397500062422178,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 1,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 4671,
+        "RerankAgent": 163,
+        "SynthesisAgent": 1,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 213,
+      "latencyMs": 132,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 0.5,
+      "category": "ownership",
+      "faithfulness": 0.3734274761377818,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 74,
+        "RerankAgent": 57,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
+    },
+    {
+      "success": true,
+      "latencyMs": 201,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
       "recallAtK": 1,
-      "category": "dependency",
-      "faithfulness": 0.3900140511742718
+      "category": "resilience",
+      "faithfulness": 0.37811308315483994,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 145,
+        "RerankAgent": 56,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 176,
+      "latencyMs": 131,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 0,
+      "recallAtK": 0,
+      "category": "dependency",
+      "faithfulness": 0.3805411881486249,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 82,
+        "RerankAgent": 49,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
+    },
+    {
+      "success": true,
+      "latencyMs": 147,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
       "recallAtK": 1,
       "category": "incident",
-      "faithfulness": 0.4046945360424715
+      "faithfulness": 0.3819046156556973,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 70,
+        "RerankAgent": 77,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 191,
-      "citations": 6,
-      "ruleScore": 0,
-      "hitAtK": 0,
-      "recallAtK": 0,
-      "category": "release",
-      "faithfulness": 0.6218877378092172
-    },
-    {
-      "success": true,
-      "latencyMs": 110,
+      "latencyMs": 141,
       "citations": 12,
       "ruleScore": 0,
-      "hitAtK": 0,
-      "recallAtK": 0,
-      "category": "api",
-      "faithfulness": 0.39394890415695405
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "release",
+      "faithfulness": 0.3529481205068935,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 64,
+        "RerankAgent": 76,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 192,
+      "latencyMs": 149,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "api",
+      "faithfulness": 0.39409993002355354,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 101,
+        "RerankAgent": 48,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
+    },
+    {
+      "success": true,
+      "latencyMs": 119,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
       "recallAtK": 1,
       "category": "performance",
-      "faithfulness": 0.4076386078203318
+      "faithfulness": 0.3982813244991209,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 66,
+        "RerankAgent": 53,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 164,
-      "citations": 6,
+      "latencyMs": 173,
+      "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
       "recallAtK": 1,
       "category": "security",
-      "faithfulness": 0.6089587543707181
+      "faithfulness": 0.3671821909023563,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 72,
+        "RerankAgent": 100,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 99,
-      "citations": 6,
-      "ruleScore": 0,
-      "hitAtK": 0,
-      "recallAtK": 0,
-      "category": "capacity",
-      "faithfulness": 0.6139526582059376
-    },
-    {
-      "success": true,
-      "latencyMs": 175,
+      "latencyMs": 93,
       "citations": 12,
       "ruleScore": 0,
-      "hitAtK": 0,
-      "recallAtK": 0,
-      "category": "ops",
-      "faithfulness": 0.41276270873110266
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "capacity",
+      "faithfulness": 0.36834106149215473,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 55,
+        "RerankAgent": 38,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     },
     {
       "success": true,
-      "latencyMs": 117,
+      "latencyMs": 75,
+      "citations": 12,
+      "ruleScore": 0,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "category": "ops",
+      "faithfulness": 0.3848397992489217,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 37,
+        "RerankAgent": 38,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
+    },
+    {
+      "success": true,
+      "latencyMs": 102,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
       "recallAtK": 1,
       "category": "faq",
-      "faithfulness": 0.3843271770688661
+      "faithfulness": 0.34401100501961557,
+      "retries": 1,
+      "agentPath": [
+        "IntentRouterAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent",
+        "QueryRewriteAgent",
+        "RetrievalAgent",
+        "RerankAgent",
+        "SynthesisAgent",
+        "VerifierAgent"
+      ],
+      "agentTimings": {
+        "IntentRouterAgent": 0,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 60,
+        "RerankAgent": 42,
+        "SynthesisAgent": 0,
+        "VerifierAgent": 0
+      }
     }
   ]
 }

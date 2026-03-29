@@ -42,6 +42,8 @@ export type QueryResponse = {
   cacheHit: 'exact' | 'semantic' | 'miss';
   latencyMs: number;
   sessionId: string;
+  agentPath?: string[];
+  retryReason?: string;
 };
 
 export const RELATION_ALLOWLIST = new Set([

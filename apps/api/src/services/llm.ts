@@ -57,11 +57,15 @@ export async function embedTexts(texts: string[]): Promise<number[][]> {
   }
 }
 
-export async function chat(prompt: string, system = 'You are a precise enterprise RAG assistant.'): Promise<string> {
+export async function chat(
+  prompt: string,
+  system = 'You are a precise enterprise RAG assistant.',
+  modelOverride?: string
+): Promise<string> {
   if (env.OPENAI_API_KEY === 'EMPTY') return localChat(prompt);
   try {
     const out = await openai.chat.completions.create({
-      model: env.OPENAI_CHAT_MODEL,
+      model: modelOverride ?? env.OPENAI_CHAT_MODEL,
       temperature: 0.1,
       messages: [
         { role: 'system', content: system },
@@ -77,7 +81,8 @@ export async function chat(prompt: string, system = 'You are a precise enterpris
 export async function chatStream(
   prompt: string,
   onToken: (token: string) => void,
-  system = 'You are a precise enterprise RAG assistant.'
+  system = 'You are a precise enterprise RAG assistant.',
+  modelOverride?: string
 ): Promise<string> {
   if (env.OPENAI_API_KEY === 'EMPTY') {
     const text = localChat(prompt);
@@ -86,7 +91,7 @@ export async function chatStream(
   }
   try {
     const stream = await openai.chat.completions.create({
-      model: env.OPENAI_CHAT_MODEL,
+      model: modelOverride ?? env.OPENAI_CHAT_MODEL,
       temperature: 0.1,
       stream: true,
       messages: [
@@ -109,7 +114,7 @@ export async function chatStream(
   }
 }
 
-export async function detectIntent(question: string, chatHistory?: string): Promise<QueryIntent> {
+export async function detectIntent(question: string, chatHistory?: string, modelOverride?: string): Promise<QueryIntent> {
   const fallback = localIntent(question);
   if (env.OPENAI_API_KEY === 'EMPTY') return fallback;
   try {
@@ -123,7 +128,7 @@ export async function detectIntent(question: string, chatHistory?: string): Prom
     ]
       .filter(Boolean)
       .join('\n\n');
-    const out = (await chat(prompt, 'You are an intent classifier.')).trim().toLowerCase();
+    const out = (await chat(prompt, 'You are an intent classifier.', modelOverride)).trim().toLowerCase();
     if (out.includes('chitchat')) return 'chitchat';
     if (out.includes('knowledge')) return 'knowledge';
     return fallback;
@@ -135,7 +140,8 @@ export async function detectIntent(question: string, chatHistory?: string): Prom
 export async function chatDirectReply(
   question: string,
   chatHistory?: string,
-  onToken?: (token: string) => void
+  onToken?: (token: string) => void,
+  modelOverride?: string
 ): Promise<string> {
   const prompt = [
     'User is doing small talk. Reply naturally in Chinese, concise and friendly.',
@@ -144,7 +150,7 @@ export async function chatDirectReply(
   ]
     .filter(Boolean)
     .join('\n\n');
-  return onToken ? chatStream(prompt, onToken) : chat(prompt);
+  return onToken ? chatStream(prompt, onToken, undefined, modelOverride) : chat(prompt, undefined, modelOverride);
 }
 
 export async function extractFacts(text: string): Promise<ExtractedFacts> {

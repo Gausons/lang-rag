@@ -9,6 +9,9 @@ export type EvalRow = {
   recallAtK: number;
   category: string;
   faithfulness?: number;
+  retries?: number;
+  agentPath?: string[];
+  agentTimings?: Record<string, number>;
 };
 
 export function computeHitRecall(expected: string[] | undefined, got: string[], k: number) {
@@ -52,6 +55,19 @@ export function aggregate(rows: EvalRow[]) {
       }
     ])
   );
+  const agentStats = new Map<string, { count: number; latency: number }>();
+  for (const row of rows) {
+    for (const [agent, latency] of Object.entries(row.agentTimings ?? {})) {
+      const prev = agentStats.get(agent) ?? { count: 0, latency: 0 };
+      agentStats.set(agent, { count: prev.count + 1, latency: prev.latency + latency });
+    }
+  }
+  const agentBreakdown = Object.fromEntries(
+    [...agentStats.entries()].map(([agent, stat]) => [
+      agent,
+      { avgLatency: stat.latency / Math.max(1, stat.count), coverage: stat.count / Math.max(1, rows.length) }
+    ])
+  );
   return {
     total: rows.length,
     success: avg(rows.map((x) => (x.success ? 1 : 0))),
@@ -61,7 +77,9 @@ export function aggregate(rows: EvalRow[]) {
     hitAtK: avg(rows.map((x) => x.hitAtK)),
     recallAtK: avg(rows.map((x) => x.recallAtK)),
     faithfulness: avg(rows.map((x) => x.faithfulness ?? 0)),
-    categoryBreakdown
+    retries: avg(rows.map((x) => x.retries ?? 0)),
+    categoryBreakdown,
+    agentBreakdown
   };
 }
 

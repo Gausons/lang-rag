@@ -1,9 +1,11 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { embedTexts, chat } from '../services/llm.js';
-import { runRagGraph } from '../graph/orchestrator.js';
 import type { EvalItem } from '../types/index.js';
 import { aggregate, computeHitRecall, faithfulnessProxy, ruleScore } from '../lib/eval.js';
+import { QuerySupervisor } from '../agents/query-supervisor.js';
+
+const supervisor = new QuerySupervisor();
 
 async function main() {
   const benchmarkPath = path.join(process.cwd(), 'qa-benchmark.jsonl');
@@ -16,7 +18,11 @@ async function main() {
   const rows = [];
   for (const item of items) {
     const start = Date.now();
-    const out = await runRagGraph(item.question, 80);
+    const out = await supervisor.run({
+      question: item.question,
+      topK: 80,
+      requestId: `eval_${Date.now()}`
+    });
     const latency = Date.now() - start;
     const gotChunkIds = out.citations.map((c) => c.chunkId);
     const topK = computeHitRecall(item.expectedChunkIds, gotChunkIds, 10);
@@ -49,7 +55,10 @@ async function main() {
       hitAtK: topK.hitAtK,
       recallAtK: topK.recallAtK,
       category: item.category ?? 'default',
-      faithfulness
+      faithfulness,
+      retries: out.retries,
+      agentPath: out.agentPath,
+      agentTimings: out.agentTimings
     });
   }
 

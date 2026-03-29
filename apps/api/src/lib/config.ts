@@ -11,6 +11,16 @@ const schema = z.object({
   OPENAI_BASE_URL: z.string().default('https://api.openai.com/v1'),
   OPENAI_CHAT_MODEL: z.string().default('gpt-4o-mini'),
   OPENAI_EMBED_MODEL: z.string().default('text-embedding-3-small'),
+  AGENT_ROUTER_MODEL: z.string().default('gpt-4o-mini'),
+  AGENT_REWRITE_MODEL: z.string().default('gpt-4o-mini'),
+  AGENT_RERANK_MODEL: z.string().default('gpt-4o-mini'),
+  AGENT_VERIFY_MODEL: z.string().default('gpt-4o-mini'),
+  AGENT_MAX_RETRY: z.coerce.number().default(1),
+  AGENT_TRACE_LEVEL: z.enum(['off', 'basic', 'full']).default('basic'),
+  AGENT_TRACE_VERBOSE: z
+    .string()
+    .default('true')
+    .transform((v) => v.toLowerCase() !== 'false'),
   QDRANT_URL: z.string().default('http://localhost:6333'),
   QDRANT_COLLECTION: z.string().default('rag_chunks'),
   REDIS_URL: z.string().default('redis://localhost:6379'),

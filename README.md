@@ -74,5 +74,11 @@ pnpm test
 - Retrieval strategy follows: `dense + sparse + graph -> RRF -> embedding-MMR -> cross-encoder`.
 - When `sessionId` is provided, API stores/replays recent turns (default 6) to support multi-turn context.
 - Query includes intent recognition: small-talk goes direct response (no retrieval), knowledge questions go full RAG pipeline.
+- Query runtime uses Router + Specialists multi-agent supervisor, and `/query/stream` includes optional `agent` events.
+- Agent logs support levels:
+  - `AGENT_TRACE_LEVEL=off|basic|full`
+  - `basic`: request/supervisor summary logs (`agent-trace`)
+  - `full`: includes per-agent stage logs (`agent-event`)
+  - `AGENT_TRACE_VERBOSE=false` forces logging off for backward-compatible global kill switch.
 - Recall pool defaults `60~120`, final context defaults `6~12`.
 - Job status persistence uses local file storage in `DATA_DIR` (MVP production baseline, easy to swap to SQLite).

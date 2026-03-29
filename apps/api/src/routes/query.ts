@@ -2,15 +2,27 @@ import type { FastifyInstance } from 'fastify';
 import type { QueryRequest, QueryResponse } from '@lang-rag/shared';
 import { traceId } from '../lib/trace.js';
 import { AppError } from '../lib/errors.js';
-import { runRagGraph } from '../graph/orchestrator.js';
 import { setExactCache, setSemanticCache, tryExactCache, trySemanticCache } from '../services/cache.js';
 import { env } from '../lib/config.js';
 import { appendSessionTurn, formatHistoryForPrompt, getSessionTurns } from '../services/session.js';
-import { chatDirectReply, detectIntent } from '../services/llm.js';
+import { QuerySupervisor } from '../agents/query-supervisor.js';
+import type { AgentEvent } from '../agents/types.js';
 
 type RunOptions = {
   onToken?: (token: string) => void;
+  onAgentEvent?: (event: AgentEvent) => void;
+  onDebug?: (message: string, meta?: Record<string, unknown>) => void;
 };
+
+const supervisor = new QuerySupervisor();
+
+function traceEnabled() {
+  return env.AGENT_TRACE_VERBOSE && env.AGENT_TRACE_LEVEL !== 'off';
+}
+
+function traceFull() {
+  return traceEnabled() && env.AGENT_TRACE_LEVEL === 'full';
+}
 
 async function runQuery(body: QueryRequest, options?: RunOptions): Promise<QueryResponse> {
   const start = Date.now();
@@ -22,23 +34,11 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
   const sessionScope = `session:${sessionId}`;
   const historyTurns = await getSessionTurns(sessionId, env.SESSION_MAX_TURNS);
   const chatHistory = formatHistoryForPrompt(historyTurns);
-  const intent = await detectIntent(body.question, chatHistory);
-
-  if (intent === 'chitchat') {
-    const answer = await chatDirectReply(body.question, chatHistory, options?.onToken);
-    const res: QueryResponse = {
-      answer,
-      citations: [],
-      traceId: tId,
-      cacheHit: 'miss',
-      latencyMs: Date.now() - start,
-      sessionId
-    };
-    const ts = new Date().toISOString();
-    await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
-    await appendSessionTurn(sessionId, { role: 'assistant', content: answer, ts }, env.SESSION_MAX_TURNS);
-    return res;
-  }
+  options?.onDebug?.('query-start', {
+    sessionId,
+    topK: body.topK ?? 80,
+    hasHistory: historyTurns.length > 0
+  });
 
   const exact = await tryExactCache(requestPayload);
   if (exact) {
@@ -57,6 +57,7 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
     const ts = new Date().toISOString();
     await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
     await appendSessionTurn(sessionId, { role: 'assistant', content: answer, ts }, env.SESSION_MAX_TURNS);
+    options?.onDebug?.('query-cache-hit', { type: 'exact', sessionId });
     return res;
   }
 
@@ -72,16 +73,24 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
       traceId: tId,
       cacheHit: 'semantic',
       latencyMs: Date.now() - start,
-      sessionId
+      sessionId,
+      agentPath: ['IntentRouterAgent']
     };
     const ts = new Date().toISOString();
     await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
     await appendSessionTurn(sessionId, { role: 'assistant', content: answer, ts }, env.SESSION_MAX_TURNS);
+    options?.onDebug?.('query-cache-hit', { type: 'semantic', sessionId });
     return res;
   }
 
-  const result = await runRagGraph(body.question, body.topK ?? 80, chatHistory, {
-    onToken: options?.onToken
+  const result = await supervisor.run({
+    question: body.question,
+    topK: body.topK ?? 80,
+    chatHistory,
+    requestId: tId,
+    onToken: options?.onToken,
+    onAgentEvent: options?.onAgentEvent,
+    onDebug: options?.onDebug
   });
   const response: QueryResponse = {
     answer: result.answer,
@@ -89,7 +98,9 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
     traceId: tId,
     cacheHit: 'miss',
     latencyMs: Date.now() - start,
-    sessionId
+    sessionId,
+    agentPath: result.agentPath,
+    retryReason: result.retryReason
   };
 
   await setExactCache(requestPayload, { answer: response.answer, citations: response.citations });
@@ -97,6 +108,12 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
   const ts = new Date().toISOString();
   await appendSessionTurn(sessionId, { role: 'user', content: body.question, ts }, env.SESSION_MAX_TURNS);
   await appendSessionTurn(sessionId, { role: 'assistant', content: response.answer, ts }, env.SESSION_MAX_TURNS);
+  options?.onDebug?.('query-finish', {
+    sessionId,
+    agentPath: response.agentPath,
+    retries: result.retries,
+    retryReason: result.retryReason
+  });
   return response;
 }
 
@@ -108,7 +125,33 @@ function writeSse(raw: NodeJS.WritableStream, event: string, data: unknown) {
 export async function registerQueryRoutes(app: FastifyInstance) {
   app.post('/query', async (req) => {
     const body = (req.body ?? {}) as QueryRequest;
-    return runQuery(body);
+    const enabled = traceEnabled();
+    const full = traceFull();
+    return runQuery(body, {
+      onDebug: enabled
+        ? (message, meta) =>
+            req.log.info(
+              {
+                tag: 'agent',
+                traceLevel: env.AGENT_TRACE_LEVEL,
+                message,
+                ...meta
+              },
+              'agent-trace'
+            )
+        : undefined,
+      onAgentEvent: full
+        ? (event) =>
+            req.log.info(
+              {
+                tag: 'agent',
+                traceLevel: env.AGENT_TRACE_LEVEL,
+                event
+              },
+              'agent-event'
+            )
+        : undefined
+    });
   });
 
   app.post('/query/stream', async (req, reply) => {
@@ -126,7 +169,26 @@ export async function registerQueryRoutes(app: FastifyInstance) {
         onToken: (token) => {
           tokenCount += token.length;
           writeSse(reply.raw, 'token', { token });
-        }
+        },
+        onAgentEvent: (event) => {
+          writeSse(reply.raw, 'agent', event);
+          if (traceFull()) {
+            app.log.info({ tag: 'agent', stream: true, traceLevel: env.AGENT_TRACE_LEVEL, event }, 'agent-event');
+          }
+        },
+        onDebug: traceEnabled()
+          ? (message, meta) =>
+              app.log.info(
+                {
+                  tag: 'agent',
+                  stream: true,
+                  traceLevel: env.AGENT_TRACE_LEVEL,
+                  message,
+                  ...meta
+                },
+                'agent-trace'
+              )
+          : undefined
       });
       writeSse(reply.raw, 'citations', { citations: result.citations });
       writeSse(reply.raw, 'done', {
@@ -134,7 +196,9 @@ export async function registerQueryRoutes(app: FastifyInstance) {
         cacheHit: result.cacheHit,
         latencyMs: result.latencyMs,
         sessionId: result.sessionId,
-        tokenCount
+        tokenCount,
+        agentPath: result.agentPath,
+        retryReason: result.retryReason
       });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
