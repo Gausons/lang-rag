@@ -11,8 +11,51 @@ function baseState(): AgentState {
     answer: '',
     citations: [],
     retryCount: 0,
-    agentPath: []
+    agentPath: [],
+    stateVersion: 0,
+    rewriteFallbackCount: 0,
+    verifierRejectCount: 0,
+    retryTriggered: false,
+    retrySucceeded: false
   };
+}
+
+const WRITABLE_BY_AGENT: Record<AgentName, Array<keyof AgentState>> = {
+  IntentRouterAgent: ['intent'],
+  QueryRewriteAgent: ['rewrittenQuestion', 'rewriteFallbackCount'],
+  RetrievalAgent: ['retrieved', 'queryEmbedding'],
+  RerankAgent: ['context'],
+  SynthesisAgent: ['answer', 'citations'],
+  VerifierAgent: ['verified', 'verifyReason', 'verifierRejectCount'],
+  ChitchatAgent: ['answer', 'citations']
+};
+
+const SUPERVISOR_MUTABLE_KEYS: Array<keyof AgentState> = [
+  'agentPath',
+  'stateVersion',
+  'lastUpdatedBy',
+  'retryCount',
+  'retryReason',
+  'retryTriggered',
+  'retrySucceeded'
+];
+
+function sameValue(a: unknown, b: unknown): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function changedKeys(prev: AgentState, next: AgentState): Array<keyof AgentState> {
+  const keys = Object.keys(prev) as Array<keyof AgentState>;
+  return keys.filter((k) => !sameValue(prev[k], next[k]));
+}
+
+export function validateAgentStateMutation(agentName: AgentName, prev: AgentState, next: AgentState) {
+  const changed = changedKeys(prev, next);
+  const allowed = new Set(WRITABLE_BY_AGENT[agentName]);
+  const illegal = changed.filter((k) => !allowed.has(k) && !SUPERVISOR_MUTABLE_KEYS.includes(k));
+  if (illegal.length > 0) {
+    throw new Error(`agent ${agentName} attempted illegal state writes: ${illegal.join(', ')}`);
+  }
 }
 
 async function invokeAgent(
@@ -32,6 +75,8 @@ async function invokeAgent(
   });
   const start = Date.now();
   const next = await agent.invoke(state, ctx);
+  validateAgentStateMutation(agent.name, state, next);
+  const changed = changedKeys(state, next).filter((k) => !SUPERVISOR_MUTABLE_KEYS.includes(k));
   const latency = Date.now() - start;
   timings[agent.name] = (timings[agent.name] ?? 0) + latency;
   ctx.onAgentEvent?.({
@@ -48,6 +93,8 @@ async function invokeAgent(
   });
   return {
     ...next,
+    stateVersion: state.stateVersion + (changed.length ? 1 : 0),
+    lastUpdatedBy: changed.length ? agent.name : state.lastUpdatedBy,
     agentPath: [...next.agentPath, agent.name]
   };
 }
@@ -76,7 +123,9 @@ class QueryRewriteAgent implements AgentNode {
       'Output one rewritten query sentence only.',
       env.AGENT_REWRITE_MODEL
     );
-    return { ...state, rewrittenQuestion: rewritten.trim() || ctx.question };
+    const nextQuery = rewritten.trim() || ctx.question;
+    const fallback = nextQuery === ctx.question ? 1 : 0;
+    return { ...state, rewrittenQuestion: nextQuery, rewriteFallbackCount: state.rewriteFallbackCount + fallback };
   }
 }
 
@@ -151,7 +200,12 @@ class VerifierAgent implements AgentNode {
   async invoke(state: AgentState): Promise<AgentState> {
     const fallback = heuristicVerify(state.answer, state.citations.length);
     if (env.OPENAI_API_KEY === 'EMPTY') {
-      return { ...state, verified: fallback.pass, verifyReason: fallback.reason };
+      return {
+        ...state,
+        verified: fallback.pass,
+        verifyReason: fallback.reason,
+        verifierRejectCount: state.verifierRejectCount + (fallback.pass ? 0 : 1)
+      };
     }
     try {
       const prompt = [
@@ -163,11 +217,26 @@ class VerifierAgent implements AgentNode {
       const raw = await chat(prompt, 'You are a strict verifier.', env.AGENT_VERIFY_MODEL);
       const parsed = JSON.parse(raw) as { pass?: boolean; reason?: string };
       if (typeof parsed.pass === 'boolean') {
-        return { ...state, verified: parsed.pass, verifyReason: parsed.reason ?? '' };
+        return {
+          ...state,
+          verified: parsed.pass,
+          verifyReason: parsed.reason ?? '',
+          verifierRejectCount: state.verifierRejectCount + (parsed.pass ? 0 : 1)
+        };
       }
-      return { ...state, verified: fallback.pass, verifyReason: fallback.reason };
+      return {
+        ...state,
+        verified: fallback.pass,
+        verifyReason: fallback.reason,
+        verifierRejectCount: state.verifierRejectCount + (fallback.pass ? 0 : 1)
+      };
     } catch {
-      return { ...state, verified: fallback.pass, verifyReason: fallback.reason };
+      return {
+        ...state,
+        verified: fallback.pass,
+        verifyReason: fallback.reason,
+        verifierRejectCount: state.verifierRejectCount + (fallback.pass ? 0 : 1)
+      };
     }
   }
 }
@@ -215,7 +284,13 @@ export class QuerySupervisor {
         citations: [],
         retries: 0,
         agentPath: state.agentPath,
-        agentTimings: timings
+        agentTimings: timings,
+        conflictMetrics: {
+          rewriteFallbackCount: state.rewriteFallbackCount,
+          verifierRejectCount: state.verifierRejectCount,
+          retryTriggered: false,
+          retrySucceeded: false
+        }
       };
     }
 
@@ -237,9 +312,16 @@ export class QuerySupervisor {
       state = {
         ...state,
         retryCount: state.retryCount + 1,
-        retryReason: state.verifyReason || 'verification failed'
+        retryReason: state.verifyReason || 'verification failed',
+        retryTriggered: true
       };
       await runKnowledgeRound();
+      if (state.verified) {
+        state = {
+          ...state,
+          retrySucceeded: true
+        };
+      }
     }
 
     ctx.onDebug?.('multi-agent-finish', {
@@ -255,7 +337,13 @@ export class QuerySupervisor {
       retries: state.retryCount,
       retryReason: state.retryReason,
       agentPath: state.agentPath,
-      agentTimings: timings
+      agentTimings: timings,
+      conflictMetrics: {
+        rewriteFallbackCount: state.rewriteFallbackCount,
+        verifierRejectCount: state.verifierRejectCount,
+        retryTriggered: state.retryTriggered,
+        retrySucceeded: state.retrySucceeded
+      }
     };
   }
 }

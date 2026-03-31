@@ -58,7 +58,11 @@ async function main() {
       faithfulness,
       retries: out.retries,
       agentPath: out.agentPath,
-      agentTimings: out.agentTimings
+      agentTimings: out.agentTimings,
+      rewriteFallbackCount: out.conflictMetrics.rewriteFallbackCount,
+      verifierRejectCount: out.conflictMetrics.verifierRejectCount,
+      retryTriggered: out.conflictMetrics.retryTriggered,
+      retrySucceeded: out.conflictMetrics.retrySucceeded
     });
   }
 

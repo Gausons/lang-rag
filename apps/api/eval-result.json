@@ -2,87 +2,93 @@
   "summary": {
     "total": 12,
     "success": 1,
-    "latency": 524.9166666666666,
+    "latency": 157.41666666666666,
     "citations": 12,
     "ruleScore": 0,
     "hitAtK": 0.8333333333333334,
     "recallAtK": 0.7916666666666666,
     "faithfulness": 0.37676582143431153,
     "retries": 1,
+    "conflictRates": {
+      "rewriteFallbackRate": 0,
+      "verifierRejectRate": 1,
+      "retryTriggeredRate": 1,
+      "retrySuccessRate": 0
+    },
     "categoryBreakdown": {
       "dependency": {
         "success": 1,
-        "latency": 2483.5,
+        "latency": 327.5,
         "ruleScore": 0,
         "hitAtK": 0,
         "recallAtK": 0
       },
       "ownership": {
         "success": 1,
-        "latency": 132,
+        "latency": 88,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 0.5
       },
       "resilience": {
         "success": 1,
-        "latency": 201,
+        "latency": 98,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "incident": {
         "success": 1,
-        "latency": 147,
+        "latency": 98,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "release": {
         "success": 1,
-        "latency": 141,
+        "latency": 167,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "api": {
         "success": 1,
-        "latency": 149,
+        "latency": 136,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "performance": {
         "success": 1,
-        "latency": 119,
+        "latency": 125,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "security": {
         "success": 1,
-        "latency": 173,
+        "latency": 222,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "capacity": {
         "success": 1,
-        "latency": 93,
+        "latency": 105,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "ops": {
         "success": 1,
-        "latency": 75,
+        "latency": 102,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
       },
       "faq": {
         "success": 1,
-        "latency": 102,
+        "latency": 93,
         "ruleScore": 0,
         "hitAtK": 1,
         "recallAtK": 1
@@ -90,27 +96,27 @@
     },
     "agentBreakdown": {
       "IntentRouterAgent": {
-        "avgLatency": 0.08333333333333333,
+        "avgLatency": 0.16666666666666666,
         "coverage": 1
       },
       "QueryRewriteAgent": {
-        "avgLatency": 0.08333333333333333,
+        "avgLatency": 0.4166666666666667,
         "coverage": 1
       },
       "RetrievalAgent": {
-        "avgLatency": 458.0833333333333,
+        "avgLatency": 91.91666666666667,
         "coverage": 1
       },
       "RerankAgent": {
-        "avgLatency": 66.41666666666667,
+        "avgLatency": 62.666666666666664,
         "coverage": 1
       },
       "SynthesisAgent": {
-        "avgLatency": 0.08333333333333333,
+        "avgLatency": 1.1666666666666667,
         "coverage": 1
       },
       "VerifierAgent": {
-        "avgLatency": 0,
+        "avgLatency": 0.8333333333333334,
         "coverage": 1
       }
     }
@@ -118,7 +124,7 @@
   "rows": [
     {
       "success": true,
-      "latencyMs": 4836,
+      "latencyMs": 461,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 0,
@@ -141,16 +147,20 @@
       ],
       "agentTimings": {
         "IntentRouterAgent": 1,
-        "QueryRewriteAgent": 0,
-        "RetrievalAgent": 4671,
-        "RerankAgent": 163,
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 384,
+        "RerankAgent": 73,
         "SynthesisAgent": 1,
-        "VerifierAgent": 0
-      }
+        "VerifierAgent": 1
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 132,
+      "latencyMs": 88,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -174,15 +184,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 74,
-        "RerankAgent": 57,
+        "RetrievalAgent": 50,
+        "RerankAgent": 36,
         "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "VerifierAgent": 2
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 201,
+      "latencyMs": 98,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -205,16 +219,20 @@
       ],
       "agentTimings": {
         "IntentRouterAgent": 0,
-        "QueryRewriteAgent": 0,
-        "RetrievalAgent": 145,
-        "RerankAgent": 56,
-        "SynthesisAgent": 0,
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 53,
+        "RerankAgent": 42,
+        "SynthesisAgent": 2,
         "VerifierAgent": 0
-      }
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 131,
+      "latencyMs": 194,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 0,
@@ -237,16 +255,20 @@
       ],
       "agentTimings": {
         "IntentRouterAgent": 0,
-        "QueryRewriteAgent": 0,
-        "RetrievalAgent": 82,
-        "RerankAgent": 49,
-        "SynthesisAgent": 0,
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 47,
+        "RerankAgent": 144,
+        "SynthesisAgent": 2,
         "VerifierAgent": 0
-      }
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 147,
+      "latencyMs": 98,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -270,15 +292,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 70,
-        "RerankAgent": 77,
-        "SynthesisAgent": 0,
+        "RetrievalAgent": 41,
+        "RerankAgent": 55,
+        "SynthesisAgent": 2,
         "VerifierAgent": 0
-      }
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 141,
+      "latencyMs": 167,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -302,15 +328,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 64,
-        "RerankAgent": 76,
-        "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "RetrievalAgent": 99,
+        "RerankAgent": 66,
+        "SynthesisAgent": 1,
+        "VerifierAgent": 1
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 149,
+      "latencyMs": 136,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -334,15 +364,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 101,
-        "RerankAgent": 48,
-        "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "RetrievalAgent": 60,
+        "RerankAgent": 74,
+        "SynthesisAgent": 1,
+        "VerifierAgent": 1
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 119,
+      "latencyMs": 125,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -366,15 +400,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 66,
-        "RerankAgent": 53,
-        "SynthesisAgent": 0,
+        "RetrievalAgent": 47,
+        "RerankAgent": 76,
+        "SynthesisAgent": 2,
         "VerifierAgent": 0
-      }
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 173,
+      "latencyMs": 222,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -396,17 +434,21 @@
         "VerifierAgent"
       ],
       "agentTimings": {
-        "IntentRouterAgent": 0,
-        "QueryRewriteAgent": 1,
-        "RetrievalAgent": 72,
-        "RerankAgent": 100,
+        "IntentRouterAgent": 1,
+        "QueryRewriteAgent": 0,
+        "RetrievalAgent": 165,
+        "RerankAgent": 54,
         "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "VerifierAgent": 2
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 93,
+      "latencyMs": 105,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -429,16 +471,20 @@
       ],
       "agentTimings": {
         "IntentRouterAgent": 0,
-        "QueryRewriteAgent": 0,
-        "RetrievalAgent": 55,
-        "RerankAgent": 38,
-        "SynthesisAgent": 0,
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 47,
+        "RerankAgent": 54,
+        "SynthesisAgent": 2,
         "VerifierAgent": 0
-      }
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 75,
+      "latencyMs": 102,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -462,15 +508,19 @@
       "agentTimings": {
         "IntentRouterAgent": 0,
         "QueryRewriteAgent": 0,
-        "RetrievalAgent": 37,
-        "RerankAgent": 38,
+        "RetrievalAgent": 52,
+        "RerankAgent": 46,
         "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "VerifierAgent": 2
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     },
     {
       "success": true,
-      "latencyMs": 102,
+      "latencyMs": 93,
       "citations": 12,
       "ruleScore": 0,
       "hitAtK": 1,
@@ -493,12 +543,16 @@
       ],
       "agentTimings": {
         "IntentRouterAgent": 0,
-        "QueryRewriteAgent": 0,
-        "RetrievalAgent": 60,
-        "RerankAgent": 42,
-        "SynthesisAgent": 0,
-        "VerifierAgent": 0
-      }
+        "QueryRewriteAgent": 1,
+        "RetrievalAgent": 58,
+        "RerankAgent": 32,
+        "SynthesisAgent": 1,
+        "VerifierAgent": 1
+      },
+      "rewriteFallbackCount": 0,
+      "verifierRejectCount": 2,
+      "retryTriggered": true,
+      "retrySucceeded": false
     }
   ]
 }

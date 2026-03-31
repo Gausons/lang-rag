@@ -12,6 +12,10 @@ export type EvalRow = {
   retries?: number;
   agentPath?: string[];
   agentTimings?: Record<string, number>;
+  rewriteFallbackCount?: number;
+  verifierRejectCount?: number;
+  retryTriggered?: boolean;
+  retrySucceeded?: boolean;
 };
 
 export function computeHitRecall(expected: string[] | undefined, got: string[], k: number) {
@@ -78,6 +82,12 @@ export function aggregate(rows: EvalRow[]) {
     recallAtK: avg(rows.map((x) => x.recallAtK)),
     faithfulness: avg(rows.map((x) => x.faithfulness ?? 0)),
     retries: avg(rows.map((x) => x.retries ?? 0)),
+    conflictRates: {
+      rewriteFallbackRate: avg(rows.map((x) => ((x.rewriteFallbackCount ?? 0) > 0 ? 1 : 0))),
+      verifierRejectRate: avg(rows.map((x) => ((x.verifierRejectCount ?? 0) > 0 ? 1 : 0))),
+      retryTriggeredRate: avg(rows.map((x) => (x.retryTriggered ? 1 : 0))),
+      retrySuccessRate: avg(rows.map((x) => (x.retrySucceeded ? 1 : 0)))
+    },
     categoryBreakdown,
     agentBreakdown
   };

@@ -14,10 +14,35 @@ describe('eval metrics', () => {
 
   it('aggregates with category breakdown', () => {
     const out = aggregate([
-      { success: true, latencyMs: 10, citations: 2, ruleScore: 1, hitAtK: 1, recallAtK: 1, category: 'a' },
-      { success: false, latencyMs: 30, citations: 1, ruleScore: 0, hitAtK: 0, recallAtK: 0, category: 'b' }
+      {
+        success: true,
+        latencyMs: 10,
+        citations: 2,
+        ruleScore: 1,
+        hitAtK: 1,
+        recallAtK: 1,
+        category: 'a',
+        rewriteFallbackCount: 1,
+        verifierRejectCount: 0,
+        retryTriggered: true,
+        retrySucceeded: true
+      },
+      {
+        success: false,
+        latencyMs: 30,
+        citations: 1,
+        ruleScore: 0,
+        hitAtK: 0,
+        recallAtK: 0,
+        category: 'b',
+        rewriteFallbackCount: 0,
+        verifierRejectCount: 1,
+        retryTriggered: false,
+        retrySucceeded: false
+      }
     ]);
     expect(out.categoryBreakdown.a).toBeTruthy();
     expect(out.hitAtK).toBe(0.5);
+    expect(out.conflictRates.retryTriggeredRate).toBe(0.5);
   });
 });

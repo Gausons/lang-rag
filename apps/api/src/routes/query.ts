@@ -112,7 +112,8 @@ async function runQuery(body: QueryRequest, options?: RunOptions): Promise<Query
     sessionId,
     agentPath: response.agentPath,
     retries: result.retries,
-    retryReason: result.retryReason
+    retryReason: result.retryReason,
+    conflictMetrics: result.conflictMetrics
   });
   return response;
 }

@@ -40,6 +40,12 @@ export type AgentState = {
   verified?: boolean;
   verifyReason?: string;
   agentPath: AgentName[];
+  stateVersion: number;
+  lastUpdatedBy?: AgentName;
+  rewriteFallbackCount: number;
+  verifierRejectCount: number;
+  retryTriggered: boolean;
+  retrySucceeded: boolean;
 };
 
 export type AgentResult = {
@@ -49,6 +55,12 @@ export type AgentResult = {
   retryReason?: string;
   retries: number;
   agentTimings: Record<AgentName, number>;
+  conflictMetrics: {
+    rewriteFallbackCount: number;
+    verifierRejectCount: number;
+    retryTriggered: boolean;
+    retrySucceeded: boolean;
+  };
 };
 
 export interface AgentNode {
